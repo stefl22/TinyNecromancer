@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,9 +11,12 @@ public class PlayerCombat : MonoBehaviour
 
     [Header("Basic Attack")]
     [SerializeField] private float attackDamage = 25f;
-    [SerializeField] private float attackRadius = 1f;
+    [SerializeField] private float attackRadius = 1.2f;
     [SerializeField] private float attackCooldown = 0.45f;
     [SerializeField] private float attackWindup = 0.1f;
+
+    public event Action AttackStarted;
+    public event Action AttackHit;
 
     private bool isAttacking;
 
@@ -45,11 +49,13 @@ public class PlayerCombat : MonoBehaviour
     {
         isAttacking = true;
 
-        // Small delay before the hit connects.
-        // Later this will synchronize with the attack animation.
+        AttackStarted?.Invoke();
+
         yield return new WaitForSeconds(attackWindup);
 
         ApplyAttackDamage();
+
+        AttackHit?.Invoke();
 
         float remainingCooldown =
             Mathf.Max(attackCooldown - attackWindup, 0f);
