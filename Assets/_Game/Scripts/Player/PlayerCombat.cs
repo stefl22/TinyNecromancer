@@ -20,6 +20,13 @@ public class PlayerCombat : MonoBehaviour
 
     private bool isAttacking;
 
+    private PlayerMovement playerMovement;
+
+    private void Awake()
+    {
+        playerMovement = GetComponent<PlayerMovement>();
+    }
+
     private void Update()
     {
         if (Mouse.current == null)
@@ -33,12 +40,22 @@ public class PlayerCombat : MonoBehaviour
 
     private void TryAttack()
     {
+        // Don't allow attacks while dodging.
+        if (playerMovement != null &&
+            playerMovement.IsDodging)
+        {
+            return;
+        }
+
         if (isAttacking)
             return;
 
         if (attackPoint == null)
         {
-            Debug.LogWarning("PlayerCombat has no AttackPoint assigned.");
+            Debug.LogWarning(
+                "PlayerCombat has no AttackPoint assigned."
+            );
+
             return;
         }
 
@@ -58,9 +75,14 @@ public class PlayerCombat : MonoBehaviour
         AttackHit?.Invoke();
 
         float remainingCooldown =
-            Mathf.Max(attackCooldown - attackWindup, 0f);
+            Mathf.Max(
+                attackCooldown - attackWindup,
+                0f
+            );
 
-        yield return new WaitForSeconds(remainingCooldown);
+        yield return new WaitForSeconds(
+            remainingCooldown
+        );
 
         isAttacking = false;
     }
@@ -93,7 +115,9 @@ public class PlayerCombat : MonoBehaviour
             if (!damagedTargets.Add(targetHealth))
                 continue;
 
-            targetHealth.TakeDamage(attackDamage);
+            targetHealth.TakeDamage(
+                attackDamage
+            );
         }
     }
 

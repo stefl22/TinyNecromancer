@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,11 +13,21 @@ public class PlayerMovement : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] private float rotationSpeed = 12f;
 
+    [Header("Dodge")]
+    [SerializeField] private float dodgeSpeed = 10f;
+    [SerializeField] private float dodgeDuration = 0.22f;
+    [SerializeField] private float dodgeCooldown = 0.65f;
+
     [Header("References")]
     [SerializeField] private Transform cameraTransform;
 
     private CharacterController controller;
     private Vector3 currentVelocity;
+
+    private bool isDodging;
+    private float nextDodgeTime;
+
+    public bool IsDodging => isDodging;
 
     private void Awake()
     {
@@ -30,15 +41,24 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (isDodging)
+            return;
+
         Vector2 input = ReadInput();
 
-        Vector3 moveDirection = GetCameraRelativeDirection(input);
+        if (TryStartDodge(input))
+            return;
 
-        Vector3 targetVelocity = moveDirection * moveSpeed;
+        Vector3 moveDirection =
+            GetCameraRelativeDirection(input);
 
-        float changeRate = moveDirection.sqrMagnitude > 0.01f
-            ? acceleration
-            : deceleration;
+        Vector3 targetVelocity =
+            moveDirection * moveSpeed;
+
+        float changeRate =
+            moveDirection.sqrMagnitude > 0.01f
+                ? acceleration
+                : deceleration;
 
         currentVelocity = Vector3.MoveTowards(
             currentVelocity,
@@ -46,9 +66,71 @@ public class PlayerMovement : MonoBehaviour
             changeRate * Time.deltaTime
         );
 
-        controller.Move(currentVelocity * Time.deltaTime);
+        controller.Move(
+            currentVelocity * Time.deltaTime
+        );
 
         RotatePlayer();
+    }
+
+    private bool TryStartDodge(Vector2 input)
+    {
+        if (Keyboard.current == null)
+            return false;
+
+        if (!Keyboard.current.spaceKey.wasPressedThisFrame)
+            return false;
+
+        if (Time.time < nextDodgeTime)
+            return false;
+
+        Vector3 dodgeDirection =
+            GetCameraRelativeDirection(input);
+
+        // If no WASD key is pressed, dodge forward.
+        if (dodgeDirection.sqrMagnitude < 0.01f)
+        {
+            dodgeDirection = transform.forward;
+        }
+
+        dodgeDirection.Normalize();
+
+        StartCoroutine(
+            DodgeRoutine(dodgeDirection)
+        );
+
+        return true;
+    }
+
+    private IEnumerator DodgeRoutine(
+        Vector3 dodgeDirection)
+    {
+        isDodging = true;
+
+        currentVelocity = Vector3.zero;
+
+        nextDodgeTime =
+            Time.time + dodgeCooldown;
+
+        transform.rotation =
+            Quaternion.LookRotation(dodgeDirection);
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < dodgeDuration)
+        {
+            controller.Move(
+                dodgeDirection *
+                dodgeSpeed *
+                Time.deltaTime
+            );
+
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+
+        isDodging = false;
     }
 
     private Vector2 ReadInput()
@@ -78,15 +160,23 @@ public class PlayerMovement : MonoBehaviour
         return input;
     }
 
-    private Vector3 GetCameraRelativeDirection(Vector2 input)
+    private Vector3 GetCameraRelativeDirection(
+        Vector2 input)
     {
         if (cameraTransform == null)
         {
-            return new Vector3(input.x, 0f, input.y);
+            return new Vector3(
+                input.x,
+                0f,
+                input.y
+            );
         }
 
-        Vector3 cameraForward = cameraTransform.forward;
-        Vector3 cameraRight = cameraTransform.right;
+        Vector3 cameraForward =
+            cameraTransform.forward;
+
+        Vector3 cameraRight =
+            cameraTransform.right;
 
         cameraForward.y = 0f;
         cameraRight.y = 0f;
@@ -109,18 +199,25 @@ public class PlayerMovement : MonoBehaviour
     private void RotatePlayer()
     {
         Vector3 facingDirection =
-            new Vector3(currentVelocity.x, 0f, currentVelocity.z);
+            new Vector3(
+                currentVelocity.x,
+                0f,
+                currentVelocity.z
+            );
 
         if (facingDirection.sqrMagnitude < 0.01f)
             return;
 
         Quaternion targetRotation =
-            Quaternion.LookRotation(facingDirection.normalized);
+            Quaternion.LookRotation(
+                facingDirection.normalized
+            );
 
-        transform.rotation = Quaternion.Slerp(
-            transform.rotation,
-            targetRotation,
-            rotationSpeed * Time.deltaTime
-        );
+        transform.rotation =
+            Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                rotationSpeed * Time.deltaTime
+            );
     }
 }
