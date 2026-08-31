@@ -1,41 +1,74 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerCombat : MonoBehaviour
 {
+    [Header("References")]
+    [SerializeField] private Transform attackPoint;
+
     [Header("Basic Attack")]
     [SerializeField] private float attackDamage = 25f;
-    [SerializeField] private float attackRange = 1.25f;
-    [SerializeField] private float attackForwardOffset = 1.25f;
-    [SerializeField] private float attackCooldown = 0.4f;
+    [SerializeField] private float attackRadius = 1f;
+    [SerializeField] private float attackCooldown = 0.45f;
+    [SerializeField] private float attackWindup = 0.1f;
 
-    private float nextAttackTime;
+    private bool isAttacking;
 
     private void Update()
     {
         if (Mouse.current == null)
             return;
 
-        if (Mouse.current.leftButton.wasPressedThisFrame &&
-            Time.time >= nextAttackTime)
+        if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            PerformAttack();
-
-            nextAttackTime = Time.time + attackCooldown;
+            TryAttack();
         }
     }
 
-    private void PerformAttack()
+    private void TryAttack()
     {
-        Vector3 attackCenter =
-            transform.position +
-            transform.forward * attackForwardOffset;
+        if (isAttacking)
+            return;
 
+        if (attackPoint == null)
+        {
+            Debug.LogWarning("PlayerCombat has no AttackPoint assigned.");
+            return;
+        }
+
+        StartCoroutine(AttackRoutine());
+    }
+
+    private IEnumerator AttackRoutine()
+    {
+        isAttacking = true;
+
+        // Small delay before the hit connects.
+        // Later this will synchronize with the attack animation.
+        yield return new WaitForSeconds(attackWindup);
+
+        ApplyAttackDamage();
+
+        float remainingCooldown =
+            Mathf.Max(attackCooldown - attackWindup, 0f);
+
+        yield return new WaitForSeconds(remainingCooldown);
+
+        isAttacking = false;
+    }
+
+    private void ApplyAttackDamage()
+    {
         Collider[] hitColliders =
-            Physics.OverlapSphere(attackCenter, attackRange);
+            Physics.OverlapSphere(
+                attackPoint.position,
+                attackRadius
+            );
 
-        HashSet<Health> damagedTargets = new HashSet<Health>();
+        HashSet<Health> damagedTargets =
+            new HashSet<Health>();
 
         foreach (Collider hitCollider in hitColliders)
         {
@@ -48,6 +81,9 @@ public class PlayerCombat : MonoBehaviour
             if (targetHealth.gameObject == gameObject)
                 continue;
 
+            if (targetHealth.IsDead)
+                continue;
+
             if (!damagedTargets.Add(targetHealth))
                 continue;
 
@@ -57,13 +93,12 @@ public class PlayerCombat : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Vector3 attackCenter =
-            transform.position +
-            transform.forward * attackForwardOffset;
+        if (attackPoint == null)
+            return;
 
         Gizmos.DrawWireSphere(
-            attackCenter,
-            attackRange
+            attackPoint.position,
+            attackRadius
         );
     }
 }
