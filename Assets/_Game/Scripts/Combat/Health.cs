@@ -10,6 +10,7 @@ public class Health : MonoBehaviour
     public float MaxHealth => maxHealth;
     public float CurrentHealth => currentHealth;
     public bool IsDead => currentHealth <= 0f;
+    public bool IsInvulnerable { get; private set; }
 
     public event Action<float, float> HealthChanged;
     public event Action<float> Damaged;
@@ -23,6 +24,9 @@ public class Health : MonoBehaviour
     public void TakeDamage(float damage)
     {
         if (IsDead || damage <= 0f)
+            return;
+
+        if (IsInvulnerable)
             return;
 
         float previousHealth = currentHealth;
@@ -67,8 +71,14 @@ public class Health : MonoBehaviour
         );
     }
 
+    public void SetInvulnerable(bool invulnerable)
+    {
+        IsInvulnerable = invulnerable;
+    }
+
     private void Die()
     {
+        IsInvulnerable = false;
         Died?.Invoke();
     }
 }

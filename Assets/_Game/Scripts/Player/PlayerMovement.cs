@@ -17,6 +17,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float dodgeSpeed = 10f;
     [SerializeField] private float dodgeDuration = 0.22f;
     [SerializeField] private float dodgeCooldown = 0.65f;
+    [SerializeField] private float iFrameDelay = 0.02f;
+    [SerializeField] private float iFrameDuration = 0.15f;
 
     [Header("References")]
     [SerializeField] private Transform cameraTransform;
@@ -26,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isDodging;
     private PlayerCombat playerCombat;
+    private Health health;
     private float nextDodgeTime;
 
     public bool IsDodging => isDodging;
@@ -34,6 +37,7 @@ public class PlayerMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         playerCombat = GetComponent<PlayerCombat>();
+        health = GetComponent<Health>();
 
         if (cameraTransform == null && Camera.main != null)
         {
@@ -80,6 +84,7 @@ public class PlayerMovement : MonoBehaviour
         if (Keyboard.current == null)
             return false;
 
+        // Don't dodge while an attack is already happening.
         if (playerCombat != null &&
             playerCombat.IsAttacking)
         {
@@ -115,6 +120,10 @@ public class PlayerMovement : MonoBehaviour
     {
         isDodging = true;
 
+        StartCoroutine(
+            InvulnerabilityRoutine()
+        );
+
         currentVelocity = Vector3.zero;
 
         nextDodgeTime =
@@ -139,6 +148,26 @@ public class PlayerMovement : MonoBehaviour
         }
 
         isDodging = false;
+    }
+
+    private IEnumerator InvulnerabilityRoutine()
+    {
+        if (health == null)
+            yield break;
+
+        // Small startup window where the player
+        // is still vulnerable.
+        yield return new WaitForSeconds(
+            iFrameDelay
+        );
+
+        health.SetInvulnerable(true);
+
+        yield return new WaitForSeconds(
+            iFrameDuration
+        );
+
+        health.SetInvulnerable(false);
     }
 
     private Vector2 ReadInput()
