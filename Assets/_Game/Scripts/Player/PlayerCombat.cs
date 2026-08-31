@@ -19,6 +19,7 @@ public class PlayerCombat : MonoBehaviour
     public event Action AttackHit;
 
     private bool isAttacking;
+    public bool IsAttacking => isAttacking;
 
     private PlayerMovement playerMovement;
 

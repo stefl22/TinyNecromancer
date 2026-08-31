@@ -25,6 +25,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 currentVelocity;
 
     private bool isDodging;
+    private PlayerCombat playerCombat;
     private float nextDodgeTime;
 
     public bool IsDodging => isDodging;
@@ -32,6 +33,7 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        playerCombat = GetComponent<PlayerCombat>();
 
         if (cameraTransform == null && Camera.main != null)
         {
@@ -77,6 +79,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Keyboard.current == null)
             return false;
+
+        if (playerCombat != null &&
+            playerCombat.IsAttacking)
+        {
+            return false;
+        }
 
         if (!Keyboard.current.spaceKey.wasPressedThisFrame)
             return false;
