@@ -1308,8 +1308,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb493ba737e44e2478b0fa139de6b6f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerNoiseEmitter
-  movementNoiseRadius: 3
+  movementNoiseRadius: 4.5
   movementNoiseInterval: 0.45
+  dodgeNoiseRadius: 6
+  attackNoiseRadius: 7
 --- !u!1 &633899480
 GameObject:
   m_ObjectHideFlags: 0
