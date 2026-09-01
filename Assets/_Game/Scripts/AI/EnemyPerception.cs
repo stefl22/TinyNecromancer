@@ -16,20 +16,31 @@ public class EnemyPerception : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool canSeeTarget;
-    [SerializeField] private bool hasSeenTarget;
+    [SerializeField] private bool hasTargetMemory;
     [SerializeField] private Vector3 lastKnownPosition;
+    [SerializeField] private bool lastPerceptionWasNoise;
 
-    private float lastSeenTime;
+    private float lastPerceivedTime;
 
     public Transform Target => target;
     public bool CanSeeTarget => canSeeTarget;
-    public bool HasSeenTarget => hasSeenTarget;
+    public bool HasTargetMemory => hasTargetMemory;
     public Vector3 LastKnownPosition => lastKnownPosition;
 
-    public float TimeSinceLastSeen =>
-        hasSeenTarget
-            ? Time.time - lastSeenTime
+    public float TimeSinceLastPerceived =>
+        hasTargetMemory
+            ? Time.time - lastPerceivedTime
             : Mathf.Infinity;
+
+    private void OnEnable()
+    {
+        NoiseSystem.NoiseEmitted += HandleNoise;
+    }
+
+    private void OnDisable()
+    {
+        NoiseSystem.NoiseEmitted -= HandleNoise;
+    }
 
     private void Update()
     {
@@ -37,15 +48,54 @@ public class EnemyPerception : MonoBehaviour
 
         if (canSeeTarget)
         {
-            hasSeenTarget = true;
-            lastKnownPosition = target.position;
-            lastSeenTime = Time.time;
+            RememberPosition(
+                target.position,
+                false
+            );
         }
     }
 
     public void ForgetTarget()
     {
-        hasSeenTarget = false;
+        hasTargetMemory = false;
+        lastPerceptionWasNoise = false;
+    }
+
+    private void RememberPosition(
+        Vector3 position,
+        bool wasNoise)
+    {
+        hasTargetMemory = true;
+        lastKnownPosition = position;
+        lastPerceivedTime = Time.time;
+        lastPerceptionWasNoise = wasNoise;
+    }
+
+    private void HandleNoise(
+        Vector3 noisePosition,
+        float noiseRadius,
+        GameObject source)
+    {
+        if (target == null || source == null)
+            return;
+
+        // For now, only react to noise produced by our Player.
+        if (source != target.gameObject)
+            return;
+
+        float distance =
+            Vector3.Distance(
+                transform.position,
+                noisePosition
+            );
+
+        if (distance > noiseRadius)
+            return;
+
+        RememberPosition(
+            noisePosition,
+            true
+        );
     }
 
     private bool CheckVision()
@@ -142,7 +192,8 @@ public class EnemyPerception : MonoBehaviour
             rightBoundary * sightRange
         );
 
-        if (hasSeenTarget && !canSeeTarget)
+        if (hasTargetMemory &&
+            !canSeeTarget)
         {
             Gizmos.DrawWireSphere(
                 lastKnownPosition,

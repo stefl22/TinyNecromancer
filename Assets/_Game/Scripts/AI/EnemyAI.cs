@@ -124,10 +124,10 @@ public class EnemyAI : MonoBehaviour
 
     private void HandleLostTarget()
     {
-        if (!perception.HasSeenTarget)
+        if (!perception.HasTargetMemory)
             return;
 
-        if (perception.TimeSinceLastSeen >
+        if (perception.TimeSinceLastPerceived >
             memoryDuration)
         {
             perception.ForgetTarget();
