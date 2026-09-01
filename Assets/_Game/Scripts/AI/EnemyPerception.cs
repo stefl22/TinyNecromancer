@@ -16,13 +16,36 @@ public class EnemyPerception : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool canSeeTarget;
+    [SerializeField] private bool hasSeenTarget;
+    [SerializeField] private Vector3 lastKnownPosition;
+
+    private float lastSeenTime;
 
     public Transform Target => target;
     public bool CanSeeTarget => canSeeTarget;
+    public bool HasSeenTarget => hasSeenTarget;
+    public Vector3 LastKnownPosition => lastKnownPosition;
+
+    public float TimeSinceLastSeen =>
+        hasSeenTarget
+            ? Time.time - lastSeenTime
+            : Mathf.Infinity;
 
     private void Update()
     {
         canSeeTarget = CheckVision();
+
+        if (canSeeTarget)
+        {
+            hasSeenTarget = true;
+            lastKnownPosition = target.position;
+            lastSeenTime = Time.time;
+        }
+    }
+
+    public void ForgetTarget()
+    {
+        hasSeenTarget = false;
     }
 
     private bool CheckVision()
@@ -44,7 +67,6 @@ public class EnemyPerception : MonoBehaviour
         float distanceToTarget =
             directionToTarget.magnitude;
 
-        // Too far away.
         if (distanceToTarget > sightRange)
             return false;
 
@@ -64,11 +86,9 @@ public class EnemyPerception : MonoBehaviour
                 horizontalDirection.normalized
             );
 
-        // Target is outside the enemy's field of view.
         if (angleToTarget > fieldOfView * 0.5f)
             return false;
 
-        // Check whether something is blocking vision.
         if (Physics.Raycast(
             eyePosition,
             directionToTarget.normalized,
@@ -121,5 +141,13 @@ public class EnemyPerception : MonoBehaviour
             eyePosition,
             rightBoundary * sightRange
         );
+
+        if (hasSeenTarget && !canSeeTarget)
+        {
+            Gizmos.DrawWireSphere(
+                lastKnownPosition,
+                0.3f
+            );
+        }
     }
 }

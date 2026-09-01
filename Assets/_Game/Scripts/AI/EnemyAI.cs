@@ -18,6 +18,12 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float attackWindup = 0.4f;
     [SerializeField] private float attackCooldown = 1f;
 
+    [Header("Investigation")]
+    [SerializeField] private float memoryDuration = 6f;
+    [SerializeField] private float investigateStopDistance = 0.4f;
+    [SerializeField] private float searchDuration = 2f;
+    [SerializeField] private float searchTurnSpeed = 90f;
+
     public event Action AttackStarted;
     public event Action AttackHit;
 
@@ -27,7 +33,10 @@ public class EnemyAI : MonoBehaviour
     private EnemyPerception perception;
 
     private bool isAttacking;
+    private bool isSearching;
+
     private float nextAttackTime;
+    private float searchEndTime;
 
     private void Awake()
     {
@@ -70,9 +79,20 @@ public class EnemyAI : MonoBehaviour
         if (isAttacking)
             return;
 
-        if (!perception.CanSeeTarget)
-            return;
+        if (perception.CanSeeTarget)
+        {
+            isSearching = false;
 
+            HandleVisibleTarget(target);
+
+            return;
+        }
+
+        HandleLostTarget();
+    }
+
+    private void HandleVisibleTarget(Transform target)
+    {
         Vector3 direction =
             target.position - transform.position;
 
@@ -100,6 +120,67 @@ public class EnemyAI : MonoBehaviour
         {
             MoveTowards(direction);
         }
+    }
+
+    private void HandleLostTarget()
+    {
+        if (!perception.HasSeenTarget)
+            return;
+
+        if (perception.TimeSinceLastSeen >
+            memoryDuration)
+        {
+            perception.ForgetTarget();
+            isSearching = false;
+            return;
+        }
+
+        Vector3 direction =
+            perception.LastKnownPosition -
+            transform.position;
+
+        direction.y = 0f;
+
+        float distance =
+            direction.magnitude;
+
+        if (!isSearching)
+        {
+            if (distance > investigateStopDistance)
+            {
+                RotateTowards(direction);
+                MoveTowards(direction);
+
+                return;
+            }
+
+            isSearching = true;
+
+            searchEndTime =
+                Time.time + searchDuration;
+        }
+
+        SearchForTarget();
+    }
+
+    private void SearchForTarget()
+    {
+        if (!isSearching)
+            return;
+
+        if (Time.time >= searchEndTime)
+        {
+            isSearching = false;
+            perception.ForgetTarget();
+
+            return;
+        }
+
+        transform.Rotate(
+            0f,
+            searchTurnSpeed * Time.deltaTime,
+            0f
+        );
     }
 
     private IEnumerator AttackRoutine()
@@ -144,16 +225,21 @@ public class EnemyAI : MonoBehaviour
 
     private void MoveTowards(Vector3 direction)
     {
-        Vector3 movement =
+        if (direction.sqrMagnitude < 0.001f)
+            return;
+
+        controller.Move(
             direction.normalized *
             moveSpeed *
-            Time.deltaTime;
-
-        controller.Move(movement);
+            Time.deltaTime
+        );
     }
 
     private void RotateTowards(Vector3 direction)
     {
+        if (direction.sqrMagnitude < 0.001f)
+            return;
+
         Quaternion targetRotation =
             Quaternion.LookRotation(
                 direction.normalized
