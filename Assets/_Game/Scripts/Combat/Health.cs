@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Health : MonoBehaviour
@@ -16,9 +17,24 @@ public class Health : MonoBehaviour
     public event Action<float> Damaged;
     public event Action Died;
 
+    private readonly List<IDamageInterceptor>
+        damageInterceptors =
+            new List<IDamageInterceptor>();
+
     private void Awake()
     {
         currentHealth = maxHealth;
+
+        MonoBehaviour[] behaviours =
+            GetComponents<MonoBehaviour>();
+
+        foreach (MonoBehaviour behaviour in behaviours)
+        {
+            if (behaviour is IDamageInterceptor interceptor)
+            {
+                damageInterceptors.Add(interceptor);
+            }
+        }
     }
 
     public void TakeDamage(float damage)
@@ -38,25 +54,45 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(DamageInfo damageInfo)
     {
-        if (IsDead || damageInfo.Amount <= 0f)
+        if (IsDead ||
+            damageInfo.Amount <= 0f)
+        {
             return;
+        }
 
         if (IsInvulnerable)
             return;
 
-        float previousHealth = currentHealth;
+        foreach (
+            IDamageInterceptor interceptor
+            in damageInterceptors)
+        {
+            if (interceptor.TryInterceptDamage(
+                damageInfo))
+            {
+                return;
+            }
+        }
 
-        currentHealth = Mathf.Max(
-            currentHealth - damageInfo.Amount,
-            0f
-        );
+        float previousHealth =
+            currentHealth;
+
+        currentHealth =
+            Mathf.Max(
+                currentHealth -
+                damageInfo.Amount,
+                0f
+            );
 
         float actualDamage =
-            previousHealth - currentHealth;
+            previousHealth -
+            currentHealth;
 
         if (actualDamage > 0f)
         {
-            Damaged?.Invoke(actualDamage);
+            Damaged?.Invoke(
+                actualDamage
+            );
         }
 
         HealthChanged?.Invoke(
@@ -72,13 +108,17 @@ public class Health : MonoBehaviour
 
     public void Heal(float amount)
     {
-        if (IsDead || amount <= 0f)
+        if (IsDead ||
+            amount <= 0f)
+        {
             return;
+        }
 
-        currentHealth = Mathf.Min(
-            currentHealth + amount,
-            maxHealth
-        );
+        currentHealth =
+            Mathf.Min(
+                currentHealth + amount,
+                maxHealth
+            );
 
         HealthChanged?.Invoke(
             currentHealth,
@@ -86,14 +126,17 @@ public class Health : MonoBehaviour
         );
     }
 
-    public void SetInvulnerable(bool invulnerable)
+    public void SetInvulnerable(
+        bool invulnerable)
     {
-        IsInvulnerable = invulnerable;
+        IsInvulnerable =
+            invulnerable;
     }
 
     private void Die()
     {
         IsInvulnerable = false;
+
         Died?.Invoke();
     }
 }

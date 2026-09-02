@@ -216,8 +216,26 @@ public class EnemyAI : MonoBehaviour
                 targetHealth != null &&
                 !targetHealth.IsDead)
             {
+                Vector3 attackDirection =
+                target.position -
+                transform.position;
+
+                attackDirection.y = 0f;
+
+                DamageInfo damageInfo =
+                    new DamageInfo(
+                        attackDamage,
+                        DamageCategory.Physical,
+                        DamageType.Blunt,
+                        gameObject,
+                        target.position,
+                        attackDirection,
+                        true,
+                        true
+                    );
+
                 targetHealth.TakeDamage(
-                    attackDamage
+                    damageInfo
                 );
 
                 AttackHit?.Invoke();

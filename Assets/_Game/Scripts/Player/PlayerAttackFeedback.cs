@@ -63,16 +63,13 @@ public class PlayerAttackFeedback : MonoBehaviour
             elapsed += Time.deltaTime;
 
             float progress =
-                Mathf.Clamp01(
-                    elapsed / lungeDuration
-                );
+                Mathf.Clamp01(elapsed / lungeDuration);
 
-            visual.localPosition =
-                Vector3.Lerp(
-                    originalLocalPosition,
-                    forwardPosition,
-                    progress
-                );
+            visual.localPosition = Vector3.Lerp(
+                originalLocalPosition,
+                forwardPosition,
+                progress
+            );
 
             yield return null;
         }
@@ -84,23 +81,18 @@ public class PlayerAttackFeedback : MonoBehaviour
             elapsed += Time.deltaTime;
 
             float progress =
-                Mathf.Clamp01(
-                    elapsed / returnDuration
-                );
+                Mathf.Clamp01(elapsed / returnDuration);
 
-            visual.localPosition =
-                Vector3.Lerp(
-                    forwardPosition,
-                    originalLocalPosition,
-                    progress
-                );
+            visual.localPosition = Vector3.Lerp(
+                forwardPosition,
+                originalLocalPosition,
+                progress
+            );
 
             yield return null;
         }
 
-        visual.localPosition =
-            originalLocalPosition;
-
+        visual.localPosition = originalLocalPosition;
         attackRoutine = null;
     }
 }
