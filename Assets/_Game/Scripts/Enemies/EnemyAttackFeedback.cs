@@ -77,7 +77,8 @@ public class EnemyAttackFeedback : MonoBehaviour
             yield return null;
         }
 
-        visual.localScale = originalScale;
+        visual.localScale =
+            originalScale;
 
         feedbackRoutine = null;
     }

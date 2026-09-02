@@ -23,7 +23,22 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
-        if (IsDead || damage <= 0f)
+        DamageInfo damageInfo =
+            new DamageInfo(
+                damage,
+                DamageCategory.Physical,
+                DamageType.None,
+                null,
+                transform.position,
+                Vector3.zero
+            );
+
+        TakeDamage(damageInfo);
+    }
+
+    public void TakeDamage(DamageInfo damageInfo)
+    {
+        if (IsDead || damageInfo.Amount <= 0f)
             return;
 
         if (IsInvulnerable)
@@ -32,7 +47,7 @@ public class Health : MonoBehaviour
         float previousHealth = currentHealth;
 
         currentHealth = Mathf.Max(
-            currentHealth - damage,
+            currentHealth - damageInfo.Amount,
             0f
         );
 

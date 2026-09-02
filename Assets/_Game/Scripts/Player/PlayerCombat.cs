@@ -116,8 +116,28 @@ public class PlayerCombat : MonoBehaviour
             if (!damagedTargets.Add(targetHealth))
                 continue;
 
+            Vector3 attackDirection =
+    targetHealth.transform.position -
+    transform.position;
+
+            attackDirection.y = 0f;
+
+            DamageInfo damageInfo =
+                new DamageInfo(
+                    attackDamage,
+                    DamageCategory.Physical,
+                    DamageType.Slash,
+                    gameObject,
+                    hitCollider.ClosestPoint(
+                        attackPoint.position
+                    ),
+                    attackDirection,
+                    true,
+                    true
+                );
+
             targetHealth.TakeDamage(
-                attackDamage
+                damageInfo
             );
         }
     }

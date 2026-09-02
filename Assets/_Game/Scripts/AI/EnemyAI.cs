@@ -18,11 +18,16 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float attackWindup = 0.4f;
     [SerializeField] private float attackCooldown = 1f;
 
+    [Header("Post Attack")]
+    [SerializeField] private float recoilDistance = 0.6f;
+    [SerializeField] private float recoilSpeed = 4f;
+    [SerializeField] private float recoveryTime = 0.2f;
+
     [Header("Investigation")]
     [SerializeField] private float memoryDuration = 6f;
     [SerializeField] private float investigateStopDistance = 0.4f;
     [SerializeField] private float searchDuration = 2f;
-    [SerializeField] private float searchTurnSpeed = 90f;
+    [SerializeField] private float searchTurnSpeed = 180f;
 
     public event Action AttackStarted;
     public event Action AttackHit;
@@ -196,6 +201,8 @@ public class EnemyAI : MonoBehaviour
         Transform target =
             perception.Target;
 
+        bool attackLanded = false;
+
         if (target != null)
         {
             float distanceToTarget =
@@ -214,13 +221,80 @@ public class EnemyAI : MonoBehaviour
                 );
 
                 AttackHit?.Invoke();
+
+                attackLanded = true;
             }
+        }
+
+        if (attackLanded)
+        {
+            yield return StartCoroutine(
+                PostAttackRecoil()
+            );
         }
 
         nextAttackTime =
             Time.time + attackCooldown;
 
         isAttacking = false;
+    }
+
+    private IEnumerator PostAttackRecoil()
+    {
+        Vector3 recoilDirection =
+            -transform.forward;
+
+        recoilDirection.y = 0f;
+
+        if (recoilDirection.sqrMagnitude < 0.001f)
+            yield break;
+
+        recoilDirection.Normalize();
+
+        float traveledDistance = 0f;
+
+        while (traveledDistance < recoilDistance)
+        {
+            if (health.IsDead)
+                yield break;
+
+            if (controller == null ||
+                !controller.enabled ||
+                !controller.gameObject.activeInHierarchy)
+            {
+                yield break;
+            }
+
+            float step =
+                recoilSpeed *
+                Time.deltaTime;
+
+            float remainingDistance =
+                recoilDistance -
+                traveledDistance;
+
+            step =
+                Mathf.Min(
+                    step,
+                    remainingDistance
+                );
+
+            controller.Move(
+                recoilDirection *
+                step
+            );
+
+            traveledDistance += step;
+
+            yield return null;
+        }
+
+        if (health.IsDead)
+            yield break;
+
+        yield return new WaitForSeconds(
+            recoveryTime
+        );
     }
 
     private void MoveTowards(Vector3 direction)
