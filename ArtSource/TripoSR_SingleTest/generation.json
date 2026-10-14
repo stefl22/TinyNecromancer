@@ -1,0 +1,23 @@
+{
+  "inference_count": 1,
+  "seconds": 12.958518743515015,
+  "vertices": 27646,
+  "faces": 55288,
+  "bounds": [
+    [
+      -0.1800001859664917,
+      -0.2062719464302063,
+      -0.49994176626205444
+    ],
+    [
+      0.25321316719055176,
+      0.20771169662475586,
+      0.5180168151855469
+    ]
+  ],
+  "watertight": true,
+  "gpu_peak_allocated_MiB": 2378.52685546875,
+  "torch": "2.7.1+cu128",
+  "triangulation": "PyMCubes CPU, unmodified TripoSR density and color inference",
+  "rigged": false
+}
