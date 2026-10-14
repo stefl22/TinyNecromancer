@@ -98,6 +98,34 @@ These values were manually tuned in Unity and should be treated as the current p
 ### ShieldPrototype
 - Exact latest transform was not captured in the screenshots supplied for this checkpoint. Do not guess it; inspect the Unity scene before changing it.
 
+## Blender BaseHuman v0.1 — Confirmed Measurements
+These values were read directly from the Blender Transform panels in the user's screenshots on 2026-09-02. Treat them as the current source of truth for the BaseHuman blockout unless Blender itself shows a newer value.
+
+### Base_Torso
+- Location: `(0, 0, 1.6)` m
+- Rotation: `(0, 0, 0)`
+- Scale: `(1, 1, 1)`
+- Dimensions: `X 1.03 m`, `Y 0.50 m`, `Z 1.50 m`
+
+### Base_Pelvis
+- Location: `(0, 0, 0.65)` m
+- Rotation: `(0, 0, 0)`
+- Scale: `(1, 1, 1)`
+- Dimensions: `X 0.487 m`, `Y 0.0438 m`, `Z 0.61 m`
+
+### Base_LeftThigh
+- Location: `X -0.1771 m`, `Y -0.24999 m`, `Z -0.14844 m`
+- Rotation: `(0, 0, 0)`
+- Scale: `X 0.180`, `Y 0.048`, `Z 0.550`
+- Dimensions: `X 0.36 m`, `Y 0.0968 m`, `Z 1.10 m`
+
+### Axis Reminder for Blender
+- `X` = left / right
+- `Y` = front / back
+- `Z` = up / down
+- Use `Numpad 1` for Front Orthographic before judging left/right placement.
+- Do not assume coordinates from visual placement; check the `N` panel Transform values first.
+
 ## Current Visual Assessment
 - Forearms were intentionally reduced in size and now look more proportional for the technical prototype.
 - Sword now follows the player correctly, clears the ground, and reads clearly as a sword.
