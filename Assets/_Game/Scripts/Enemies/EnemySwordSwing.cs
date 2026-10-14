@@ -51,12 +51,24 @@ public class EnemySwordSwing : MonoBehaviour
     {
         enemyAI.AttackStarted +=
             HandleAttackStarted;
+        enemyAI.AttackCancelled += CancelSwing;
     }
 
     private void OnDisable()
     {
         enemyAI.AttackStarted -=
             HandleAttackStarted;
+        enemyAI.AttackCancelled -= CancelSwing;
+        CancelSwing();
+    }
+
+    private void CancelSwing()
+    {
+        if (swingRoutine != null)
+            StopCoroutine(swingRoutine);
+        swingRoutine = null;
+        if (rightHandPoint != null)
+            rightHandPoint.localRotation = normalRotation;
     }
 
     private void HandleAttackStarted()

@@ -29,11 +29,23 @@ public class EnemyAttackFeedback : MonoBehaviour
     private void OnEnable()
     {
         enemyAI.AttackStarted += HandleAttackStarted;
+        enemyAI.AttackCancelled += CancelFeedback;
     }
 
     private void OnDisable()
     {
         enemyAI.AttackStarted -= HandleAttackStarted;
+        enemyAI.AttackCancelled -= CancelFeedback;
+        CancelFeedback();
+    }
+
+    private void CancelFeedback()
+    {
+        if (feedbackRoutine != null)
+            StopCoroutine(feedbackRoutine);
+        feedbackRoutine = null;
+        if (visual != null)
+            visual.localScale = originalScale;
     }
 
     private void HandleAttackStarted()

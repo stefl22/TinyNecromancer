@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(Health))]
 public class PlayerCombat : MonoBehaviour
 {
     [Header("References")]
@@ -17,15 +18,35 @@ public class PlayerCombat : MonoBehaviour
 
     public event Action AttackStarted;
     public event Action AttackHit;
+    public event Action AttackCancelled;
 
     private bool isAttacking;
     public bool IsAttacking => isAttacking;
 
     private PlayerMovement playerMovement;
+    private Health health;
 
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
+        health = GetComponent<Health>();
+    }
+
+    private void OnEnable() => health.Died += CancelAttack;
+
+    private void OnDisable()
+    {
+        health.Died -= CancelAttack;
+        CancelAttack();
+    }
+
+    private void CancelAttack()
+    {
+        StopAllCoroutines();
+        bool wasAttacking = isAttacking;
+        isAttacking = false;
+        if (wasAttacking)
+            AttackCancelled?.Invoke();
     }
 
     private void Update()
@@ -41,6 +62,9 @@ public class PlayerCombat : MonoBehaviour
 
     private void TryAttack()
     {
+        if (!isActiveAndEnabled || health.IsDead)
+            return;
+
         // Don't allow attacks while dodging.
         if (playerMovement != null &&
             playerMovement.IsDodging)
@@ -69,7 +93,16 @@ public class PlayerCombat : MonoBehaviour
 
         AttackStarted?.Invoke();
 
+        if (!isAttacking || health.IsDead || !isActiveAndEnabled)
+            yield break;
+
         yield return new WaitForSeconds(attackWindup);
+
+        if (health.IsDead || !isActiveAndEnabled)
+        {
+            CancelAttack();
+            yield break;
+        }
 
         ApplyAttackDamage();
 

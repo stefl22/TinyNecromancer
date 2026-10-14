@@ -29,11 +29,23 @@ public class PlayerAttackFeedback : MonoBehaviour
     private void OnEnable()
     {
         playerCombat.AttackStarted += HandleAttackStarted;
+        playerCombat.AttackCancelled += CancelFeedback;
     }
 
     private void OnDisable()
     {
         playerCombat.AttackStarted -= HandleAttackStarted;
+        playerCombat.AttackCancelled -= CancelFeedback;
+        CancelFeedback();
+    }
+
+    private void CancelFeedback()
+    {
+        if (attackRoutine != null)
+            StopCoroutine(attackRoutine);
+        attackRoutine = null;
+        if (visual != null)
+            visual.localPosition = originalLocalPosition;
     }
 
     private void HandleAttackStarted()

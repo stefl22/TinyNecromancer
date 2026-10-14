@@ -31,6 +31,7 @@ public class EnemyAI : MonoBehaviour
 
     public event Action AttackStarted;
     public event Action AttackHit;
+    public event Action AttackCancelled;
 
     private CharacterController controller;
     private Health health;
@@ -57,6 +58,24 @@ public class EnemyAI : MonoBehaviour
             targetHealth =
                 perception.Target.GetComponent<Health>();
         }
+    }
+
+    private void OnEnable() => health.Died += CancelAttack;
+
+    private void OnDisable()
+    {
+        health.Died -= CancelAttack;
+        CancelAttack();
+    }
+
+    private void CancelAttack()
+    {
+        StopAllCoroutines();
+        bool wasAttacking = isAttacking;
+        isAttacking = false;
+        isSearching = false;
+        if (wasAttacking)
+            AttackCancelled?.Invoke();
     }
 
     private void Update()
@@ -194,9 +213,18 @@ public class EnemyAI : MonoBehaviour
 
         AttackStarted?.Invoke();
 
+        if (!isAttacking || health.IsDead || !isActiveAndEnabled)
+            yield break;
+
         yield return new WaitForSeconds(
             attackWindup
         );
+
+        if (health.IsDead || !isActiveAndEnabled)
+        {
+            CancelAttack();
+            yield break;
+        }
 
         Transform target =
             perception.Target;

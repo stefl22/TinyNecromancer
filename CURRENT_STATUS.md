@@ -3,7 +3,25 @@
 > Living checkpoint for the current prototype. GitHub/code takes priority over memory if any discrepancy appears later.
 
 ## Current Branch
-- `feature/combat-v0.1`
+- `codex/combat-stability` (development; original `feature/combat-v0.1` retained)
+
+## Verified Checkpoint — 2026-10-14
+- Preserved all existing local work in `50748ae`: Prototype scene, EnemySwordSwing, original Blender art (including the ignored `.blend1` backup), and Pipeline package files.
+- Merged GitHub's `7a0e217` BaseHuman measurements without rewriting history; safety checkpoint published as `42c2852`.
+- Unity 6000.3.22f1, Pipeline 0.8.0-exp.1, CLI 1.0.0-beta.13. Restarting Pipeline through Window > Pipeline restored discovery on port 7800.
+- `DamageInfo`, `IDamageInterceptor`, and physical frontal shield blocking were already implemented before this checkpoint. Older roadmap entries below describing them as future work are historical.
+- Player and enemy attacks now cancel immediately on death or component disable. Cancellation resets attack state and the existing prototype attack visuals.
+- Verified in the open Editor: 11/11 Play Mode checks for normal attacks, cancellation, visual reset, front/rear blocking, magic, unblockable hits, and invulnerability. The four cancellation cases failed before the fix and passed afterward.
+- Final Editor Console counters: 0 errors, 0 warnings; no compilation failure. Pipeline's retained log still includes two pre-existing import-worker shutdown errors.
+- No scene, character art, movement, perception, shield rules, or dodge timing changed in this combat fix.
+- Validation instructions and limits: `AgentScripts/README.md`.
+
+### Next Active Milestone
+1. Separate attack lifecycle, contact detection, and visual presentation; use animation events to open/close weapon contact windows with one hit per target per attack.
+2. Support different full-body animation sets per combatant/loadout (one sword, dual swords, sword and shield), retaining the current prototype until a replacement is validated.
+3. Inspect the original BaseHuman Blender sources together before choosing the protagonist's silhouette/outfit. Preserve both source variants and the backup.
+4. Build the original adventurer's humanoid rig and first Idle/Walk/Run/Attack set; prepare Block/Dodge/Parry states. No external generic character assets or new procedural sword-swing substitute.
+5. Soul powers remain late-game. Existing world/art direction in GAME_DESIGN.md continues to apply.
 
 ## Current Prototype Scene
 - `Assets/_Game/Scenes/Prototype.unity`
