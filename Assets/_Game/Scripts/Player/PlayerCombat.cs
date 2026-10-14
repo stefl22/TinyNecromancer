@@ -104,7 +104,9 @@ public class PlayerCombat : MonoBehaviour
             yield break;
         }
 
-        ApplyAttackDamage();
+        var animatedCombat = GetComponent<CombatAnimator>();
+        if (animatedCombat == null || !animatedCombat.UsesWeaponContact)
+            ApplyAttackDamage();
 
         AttackHit?.Invoke();
 

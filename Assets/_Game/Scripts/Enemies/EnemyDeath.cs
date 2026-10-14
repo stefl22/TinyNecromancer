@@ -5,6 +5,7 @@ using UnityEngine;
 public class EnemyDeath : MonoBehaviour
 {
     [SerializeField] private float disappearDuration = 0.5f;
+    [SerializeField] private float animationDelay;
 
     private Health health;
     private Collider[] colliders;
@@ -37,6 +38,8 @@ public class EnemyDeath : MonoBehaviour
 
     private IEnumerator Disappear()
     {
+        if (animationDelay > 0f)
+            yield return new WaitForSeconds(animationDelay);
         Vector3 startingScale = transform.localScale;
         float elapsedTime = 0f;
 

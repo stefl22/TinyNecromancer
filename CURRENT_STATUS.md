@@ -5,6 +5,17 @@
 ## Current Branch
 - `codex/combat-stability` (development; original `feature/combat-v0.1` retained)
 
+## First Descent Visual Milestone — 2026-10-14
+- New playable scene: `Assets/_Game/Scenes/FirstDescent_Cave.unity`. Original `Prototype.unity` and BaseHuman sources remain unchanged.
+- Two original Blender-authored characters exported to FBX with valid Humanoid rigs, skinning, URP materials and separate Animator Controllers.
+- Full-body Idle/Walk/Run/Attack plus Block/Dodge/Hit/Death clips. Parry is a prepared animation state only.
+- New cave geometry, colliders, URP lighting/fog, and orbit/zoom camera. Walk with WASD, run with Left Shift, attack with left mouse, block with right mouse, dodge with Space, orbit with middle mouse.
+- CombatAnimator connects existing player/enemy attack events to authored clips and swept blade-contact windows. Legacy proximity damage remains for the original prototype; animated actors do not apply it a second time.
+- Eight live scene checks passed: walk/run and clips, dodge/i-frames, player hit, enemy hit, shield block, chase, death cancellation and floor collision.
+- All 11 previous lifecycle/defense checks also passed after integration; final Console showed zero errors/warnings.
+- Source/reproduction/controls/known limits: `FIRST_DESCENT_PLAYTEST.md`.
+- Remaining art work: refine anatomy, clothing, hand detail, motion timing and foot placement. Add animation-event contact windows and more combat styles after this first playable pass.
+
 ## Verified Checkpoint — 2026-10-14
 - Preserved all existing local work in `50748ae`: Prototype scene, EnemySwordSwing, original Blender art (including the ignored `.blend1` backup), and Pipeline package files.
 - Merged GitHub's `7a0e217` BaseHuman measurements without rewriting history; safety checkpoint published as `42c2852`.

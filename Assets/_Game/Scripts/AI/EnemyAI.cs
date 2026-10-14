@@ -11,6 +11,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float moveSpeed = 2.5f;
     [SerializeField] private float stoppingDistance = 1.5f;
     [SerializeField] private float rotationSpeed = 10f;
+    [SerializeField] private bool useGravity;
+    private float verticalSpeed;
 
     [Header("Attack")]
     [SerializeField] private float attackRange = 1.8f;
@@ -82,6 +84,12 @@ public class EnemyAI : MonoBehaviour
     {
         if (health.IsDead)
             return;
+
+        if (useGravity && controller.enabled)
+        {
+            verticalSpeed = controller.isGrounded ? -2f : verticalSpeed - 20f * Time.deltaTime;
+            controller.Move(Vector3.up * verticalSpeed * Time.deltaTime);
+        }
 
         Transform target = perception.Target;
 
@@ -262,9 +270,9 @@ public class EnemyAI : MonoBehaviour
                         true
                     );
 
-                targetHealth.TakeDamage(
-                    damageInfo
-                );
+                var animatedCombat = GetComponent<CombatAnimator>();
+                if (animatedCombat == null || !animatedCombat.UsesWeaponContact)
+                    targetHealth.TakeDamage(damageInfo);
 
                 AttackHit?.Invoke();
 

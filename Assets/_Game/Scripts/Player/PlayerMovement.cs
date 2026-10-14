@@ -9,6 +9,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float acceleration = 24f;
     [SerializeField] private float deceleration = 18f;
+    [SerializeField] private float runMultiplier = 1f;
+    [SerializeField] private bool useGravity;
+    private float verticalSpeed;
 
     [Header("Rotation")]
     [SerializeField] private float rotationSpeed = 12f;
@@ -58,8 +61,8 @@ public class PlayerMovement : MonoBehaviour
         Vector3 moveDirection =
             GetCameraRelativeDirection(input);
 
-        Vector3 targetVelocity =
-            moveDirection * moveSpeed;
+        float speed = moveSpeed * (Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed ? runMultiplier : 1f);
+        Vector3 targetVelocity = moveDirection * speed;
 
         float changeRate =
             moveDirection.sqrMagnitude > 0.01f
@@ -73,7 +76,7 @@ public class PlayerMovement : MonoBehaviour
         );
 
         controller.Move(
-            currentVelocity * Time.deltaTime
+            (currentVelocity + GravityVelocity()) * Time.deltaTime
         );
 
         RotatePlayer();
@@ -138,8 +141,7 @@ public class PlayerMovement : MonoBehaviour
         {
             controller.Move(
                 dodgeDirection *
-                dodgeSpeed *
-                Time.deltaTime
+                dodgeSpeed * Time.deltaTime + GravityVelocity() * Time.deltaTime
             );
 
             elapsedTime += Time.deltaTime;
@@ -168,6 +170,13 @@ public class PlayerMovement : MonoBehaviour
         );
 
         health.SetInvulnerable(false);
+    }
+
+    private Vector3 GravityVelocity()
+    {
+        if (!useGravity) return Vector3.zero;
+        verticalSpeed = controller.isGrounded ? -2f : verticalSpeed - 20f * Time.deltaTime;
+        return Vector3.up * verticalSpeed;
     }
 
     private Vector2 ReadInput()
